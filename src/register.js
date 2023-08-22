@@ -1,6 +1,7 @@
 import { PLAYLIST_COMMAND } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
+import fetch from 'node-fetch';
 
 /**
  * This file is meant to be run from the command line, and is not used by the
@@ -18,7 +19,7 @@ if (!token) {
 }
 if (!applicationId) {
   throw new Error(
-    'The DISCORD_APPLICATION_ID environment variable is required.',
+    'The DISCORD_APPLICATION_ID environment variable is required.'
   );
 }
 

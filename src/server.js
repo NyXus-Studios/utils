@@ -61,7 +61,7 @@ router.post('/', async (request, env) => {
       case PLAYLIST_COMMAND.name.toLowerCase(): {
         const videoIDs = await getVideoIDsFromPlaylist(
           env.GOOGLE_API_KEY,
-          interaction.data.options.find((option) => option.name === 'ID').value
+          interaction.data.options.find((option) => option.name === 'id').value
         );
         const videos = await getVideosByID(env.GOOGLE_API_KEY, videoIDs);
         videos.sort((a, b) => b.statistics.likeCount - a.statistics.likeCount);

@@ -9,7 +9,7 @@ export const PLAYLIST_COMMAND = {
   options: [
     {
       type: 3,
-      name: 'ID',
+      name: 'id',
       description: 'YouTube Playlist ID',
       required: true,
     },
