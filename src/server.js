@@ -73,6 +73,7 @@ router.post('/', async (request, env) => {
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
             content: message,
+            flags: 1 << 2, // SUPPRESS_EMBEDS
           },
         });
       }
