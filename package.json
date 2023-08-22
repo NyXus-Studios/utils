@@ -1,0 +1,24 @@
+{
+  "name": "utils",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev",
+    "register": "node src/register.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NyXus-Studios/utils.git"
+  },
+  "author": "Wen Lee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NyXus-Studios/utils/issues"
+  },
+  "homepage": "https://github.com/NyXus-Studios/utils#readme",
+  "dependencies": {
+    "discord-interactions": "^3.4.0",
+    "itty-router": "^4.0.13"
+  }
+}
