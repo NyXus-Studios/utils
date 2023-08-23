@@ -1,8 +1,12 @@
 name = "utils"
 main = "./src/server.js"
-compatibility_date="2023-05-18"
+compatibility_date = "2023-05-18"
 
 # [secrets]
-# DISCORD_TOKEN
-# DISCORD_PUBLIC_KEY
+# CLOUDFLARE_ACCOUNT_ID
+# CLOUDFLARE_API_TOKEN
+# CLOUDFLARE_ZONE_ID
 # DISCORD_APPLICATION_ID
+# DISCORD_PUBLIC_KEY
+# DISCORD_TOKEN
+# GOOGLE_API_KEY
