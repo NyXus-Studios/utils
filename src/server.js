@@ -67,7 +67,7 @@ router.post('/', async (request, env) => {
         videos.sort((a, b) => b.statistics.likeCount - a.statistics.likeCount);
         let message = 'The following list are the results:';
         for (const video of videos.slice(0, 10)) {
-          message += `\n[${video.snippet.title}](https://youtu.be/${video.id}) - ${video.statistics.likeCount} likes`;
+          message += `\n[${video.snippet.title}](https://youtu.be/${video.id}) - ${video.statistics.viewCount} views - ${video.statistics.likeCount} likes`;
         }
         return new JsonResponse({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
