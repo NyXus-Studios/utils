@@ -1,4 +1,4 @@
-name = "util-bot"
+name = "utils"
 main = "./src/server.js"
 compatibility_date="2023-05-18"
 
