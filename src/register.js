@@ -1,4 +1,4 @@
-import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
+import { TOTP_COMMAND } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
 
@@ -23,8 +23,7 @@ if (!applicationId) {
 }
 
 /**
- * Register all commands globally.  This can take o(minutes), so wait until
- * you're sure these are the commands you want.
+ * Register all commands globally.
  */
 const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
 
@@ -34,7 +33,7 @@ const response = await fetch(url, {
     Authorization: `Bot ${token}`,
   },
   method: 'PUT',
-  body: JSON.stringify([AWW_COMMAND, INVITE_COMMAND]),
+  body: JSON.stringify([TOTP_COMMAND]),
 });
 
 if (response.ok) {

@@ -3,12 +3,25 @@
  * and registration.
  */
 
-export const AWW_COMMAND = {
-  name: 'awwww',
-  description: 'Drop some cuteness on this channel.',
-};
-
-export const INVITE_COMMAND = {
-  name: 'invite',
-  description: 'Get an invite link to add the bot to your server',
+export const TOTP_COMMAND = {
+  name: 'totp',
+  description: 'Generate a one-time code for a service.',
+  options: [
+    {
+      name: 'service',
+      description: 'The service to generate a TOTP code for.',
+      type: 3,
+      required: true,
+      choices: [
+        {
+          name: 'cloudflare',
+          value: 'cloudflare',
+        },
+        {
+          name: 'gmail',
+          value: 'gmail',
+        },
+      ],
+    },
+  ],
 };

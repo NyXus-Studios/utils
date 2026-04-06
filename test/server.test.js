@@ -5,36 +5,38 @@ import {
   InteractionType,
   InteractionResponseFlags,
 } from 'discord-interactions';
-import { AWW_COMMAND, INVITE_COMMAND } from '../src/commands.js';
+import { TOTP_COMMAND } from '../src/commands.js';
 import sinon from 'sinon';
 import server from '../src/server.js';
-import { redditUrl } from '../src/reddit.js';
 
 describe('Server', () => {
   describe('GET /', () => {
-    it('should return a greeting message with the Discord application ID', async () => {
+    it('should return a simple health message', async () => {
       const request = {
         method: 'GET',
         url: new URL('/', 'http://discordo.example'),
       };
-      const env = { DISCORD_APPLICATION_ID: '123456789' };
+      const env = {};
 
       const response = await server.fetch(request, env);
       const body = await response.text();
 
-      expect(body).to.equal('👋 123456789');
+      expect(body).to.equal('Util bot is online.');
     });
   });
 
   describe('POST /', () => {
     let verifyDiscordRequestStub;
+    let dateNowStub;
 
     beforeEach(() => {
       verifyDiscordRequestStub = sinon.stub(server, 'verifyDiscordRequest');
+      dateNowStub = sinon.stub(Date, 'now').returns(1_700_000_000_000);
     });
 
     afterEach(() => {
       verifyDiscordRequestStub.restore();
+      dateNowStub.restore();
     });
 
     it('should handle a PING interaction', async () => {
@@ -59,11 +61,16 @@ describe('Server', () => {
       expect(body.type).to.equal(InteractionResponseType.PONG);
     });
 
-    it('should handle an AWW command interaction', async () => {
+    it('should reject command usage in an unapproved guild', async () => {
       const interaction = {
         type: InteractionType.APPLICATION_COMMAND,
+        guild_id: '1',
+        member: {
+          roles: ['1490840570569163025'],
+        },
         data: {
-          name: AWW_COMMAND.name,
+          name: TOTP_COMMAND.name,
+          options: [{ name: 'service', value: 'cloudflare' }],
         },
       };
 
@@ -72,37 +79,34 @@ describe('Server', () => {
         url: new URL('/', 'http://discordo.example'),
       };
 
-      const env = {};
+      const env = { CFKEY: 'JBSWY3DPEHPK3PXP' };
 
       verifyDiscordRequestStub.resolves({
         isValid: true,
         interaction: interaction,
       });
 
-      // mock the fetch call to reddit
-      const result = sinon
-        // eslint-disable-next-line no-undef
-        .stub(global, 'fetch')
-        .withArgs(redditUrl)
-        .resolves({
-          status: 200,
-          ok: true,
-          json: sinon.fake.resolves({ data: { children: [] } }),
-        });
-
       const response = await server.fetch(request, env);
       const body = await response.json();
       expect(body.type).to.equal(
         InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       );
-      expect(result.calledOnce);
+      expect(body.data.flags).to.equal(InteractionResponseFlags.EPHEMERAL);
+      expect(body.data.content).to.equal(
+        'This command can only be used in the configured server.',
+      );
     });
 
-    it('should handle an invite command interaction', async () => {
+    it('should reject command usage when role is missing', async () => {
       const interaction = {
         type: InteractionType.APPLICATION_COMMAND,
+        guild_id: '1098115673454039121',
+        member: {
+          roles: [],
+        },
         data: {
-          name: INVITE_COMMAND.name,
+          name: TOTP_COMMAND.name,
+          options: [{ name: 'service', value: 'cloudflare' }],
         },
       };
 
@@ -112,7 +116,7 @@ describe('Server', () => {
       };
 
       const env = {
-        DISCORD_APPLICATION_ID: '123456789',
+        CFKEY: 'JBSWY3DPEHPK3PXP',
       };
 
       verifyDiscordRequestStub.resolves({
@@ -125,10 +129,84 @@ describe('Server', () => {
       expect(body.type).to.equal(
         InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       );
-      expect(body.data.content).to.include(
-        'https://discord.com/oauth2/authorize?client_id=123456789&scope=applications.commands',
+      expect(body.data.flags).to.equal(InteractionResponseFlags.EPHEMERAL);
+      expect(body.data.content).to.equal(
+        'You do not have permission to use this command.',
+      );
+    });
+
+    it('should generate a totp code for a valid /totp command', async () => {
+      const interaction = {
+        type: InteractionType.APPLICATION_COMMAND,
+        guild_id: '1098115673454039121',
+        member: {
+          roles: ['1490840570569163025'],
+        },
+        data: {
+          name: TOTP_COMMAND.name,
+          options: [{ name: 'service', value: 'cloudflare' }],
+        },
+      };
+
+      const request = {
+        method: 'POST',
+        url: new URL('/', 'http://discordo.example'),
+      };
+
+      const env = {
+        CFKEY: 'JBSWY3DPEHPK3PXP',
+      };
+
+      verifyDiscordRequestStub.resolves({
+        isValid: true,
+        interaction: interaction,
+      });
+
+      const response = await server.fetch(request, env);
+      const body = await response.json();
+      expect(body.type).to.equal(
+        InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       );
       expect(body.data.flags).to.equal(InteractionResponseFlags.EPHEMERAL);
+      expect(body.data.content).to.match(/Cloudflare TOTP: \*\*\d{6}\*\*/);
+      expect(body.data.components[0].components[0].custom_id).to.equal(
+        'totp_regen:cloudflare',
+      );
+    });
+
+    it('should regenerate a code from the button custom id', async () => {
+      const interaction = {
+        type: InteractionType.MESSAGE_COMPONENT,
+        guild_id: '1098115673454039121',
+        member: {
+          roles: ['1490840570569163025'],
+        },
+        data: {
+          custom_id: 'totp_regen:gmail',
+        },
+      };
+
+      const request = {
+        method: 'POST',
+        url: new URL('/', 'http://discordo.example'),
+      };
+
+      const env = {
+        GMKEY: 'JBSWY3DPEHPK3PXP',
+      };
+
+      verifyDiscordRequestStub.resolves({
+        isValid: true,
+        interaction: interaction,
+      });
+
+      const response = await server.fetch(request, env);
+      const body = await response.json();
+      expect(body.type).to.equal(
+        InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      );
+      expect(body.data.flags).to.equal(InteractionResponseFlags.EPHEMERAL);
+      expect(body.data.content).to.match(/Gmail TOTP: \*\*\d{6}\*\*/);
     });
 
     it('should handle an unknown command interaction', async () => {

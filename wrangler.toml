@@ -1,4 +1,4 @@
-name = "awwbot"
+name = "util-bot"
 main = "./src/server.js"
 compatibility_date="2023-05-18"
 
@@ -6,3 +6,5 @@ compatibility_date="2023-05-18"
 # DISCORD_TOKEN
 # DISCORD_PUBLIC_KEY
 # DISCORD_APPLICATION_ID
+# CFKEY
+# GMKEY
